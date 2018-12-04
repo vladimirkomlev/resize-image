@@ -1,28 +1,30 @@
 package com.test.resize_image.service;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+
+import javax.imageio.ImageIO;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.test.resize_image.exception.FileExistsException;
 import com.test.resize_image.exception.FileStorageException;
 import com.test.resize_image.exception.MyFileNotFoundException;
 import com.test.resize_image.property.FileStorageProperties;
 
 @Service
-public class FileStorageService {
+public class ImageStorageService {
 
     private final Path fileStorageLocation;
 
-    public FileStorageService(FileStorageProperties fileStorageProperties) {
+    public ImageStorageService(FileStorageProperties fileStorageProperties) {
         this.fileStorageLocation = Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();
 
         try {
@@ -33,35 +35,32 @@ public class FileStorageService {
         }
     }
 
-    public String storeFile(MultipartFile file) {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+    public String storeImage(String imageName, String expansionImage, BufferedImage bufferedImage) {
+        String fileName = StringUtils.cleanPath(imageName + "." + expansionImage);
 
         try {
-            if (fileName.contains("..")) {
-                throw new FileStorageException("Sorry, filename contains invalid path sequence " + fileName);
-            }
-
-            // Copy file to the target location (Replacing existing file with the same name)
-            // TODO
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            if (Files.exists(targetLocation))
+                throw new FileExistsException(String.format("File %s already exists", fileName));
+
+            ImageIO.write(bufferedImage, expansionImage, targetLocation.toFile());
             return fileName;
         } catch (IOException e) {
-            throw new FileStorageException("Could not store file " + fileName, e);
+            throw new FileStorageException("Could not store image " + fileName, e);
         }
     }
 
-    public Resource loadFileAsResource(String fileName) {
+    public Resource loadImageAsResource(String fileNameWithExpansion) {
         try {
-            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            Path filePath = this.fileStorageLocation.resolve(fileNameWithExpansion).normalize();
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists()) {
                 return resource;
             } else {
-                throw new MyFileNotFoundException("File not found " + fileName);
+                throw new MyFileNotFoundException("Image not found " + fileNameWithExpansion);
             }
         } catch (MalformedURLException e) {
-            throw new MyFileNotFoundException("File not found " + fileName, e);
+            throw new MyFileNotFoundException("Image not found " + fileNameWithExpansion, e);
         }
     }
 }

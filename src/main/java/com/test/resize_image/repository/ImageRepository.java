@@ -8,4 +8,6 @@ public interface ImageRepository extends MongoRepository<Image, String> {
     Image findById(String id);
 
     void deleteById(String id);
+
+    Image findByIndexAndSize(long index, String size);
 }

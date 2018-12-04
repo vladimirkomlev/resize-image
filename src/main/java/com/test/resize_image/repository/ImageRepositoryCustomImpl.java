@@ -23,9 +23,8 @@ public class ImageRepositoryCustomImpl implements ImageRepositoryCustom {
         query.with(new Sort(Sort.Direction.DESC, "index"));
 
         List<Image> imageList = mongoTemplate.find(query, Image.class);
-        System.out.println();
 
-        return 0;
+        return imageList.get(0).getIndex();
     }
 
 }
