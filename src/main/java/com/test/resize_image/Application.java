@@ -13,14 +13,4 @@ public class Application {
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
-
-    // @Bean
-    // CommandLineRunner init(ImageRepository imageRepository) {
-    // return args -> {
-    // Image i1 = new Image("stuff", "SMALL", 8, ".jpg");
-    // System.out.println(i1);
-    // i1 = imageRepository.save(i1);
-    // System.out.println(i1);
-    // };
-    // }
 }

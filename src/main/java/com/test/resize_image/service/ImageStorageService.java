@@ -63,4 +63,13 @@ public class ImageStorageService {
             throw new MyFileNotFoundException("Image not found " + fileNameWithExpansion, e);
         }
     }
+
+    public void deleteImage(String fileNameWithExpansion) {
+        try {
+            Path filePath = this.fileStorageLocation.resolve(fileNameWithExpansion).normalize();
+            Files.delete(filePath);
+        } catch (IOException e) {
+            throw new MyFileNotFoundException("Image not found " + fileNameWithExpansion, e);
+        }
+    }
 }

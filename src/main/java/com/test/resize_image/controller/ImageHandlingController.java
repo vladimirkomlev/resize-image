@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -113,6 +114,16 @@ public class ImageHandlingController {
         });
 
         return imageResponses;
+    }
+
+    @RequestMapping(value = "/delete/{index}", method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteImage(@PathVariable(name = "index") long index) {
+        List<Image> imageList = imageRepository.findByIndex(index);
+        for (Image image : imageList) {
+            imageStorageService.deleteImage(image.getName() + POINT_OF_PATH + image.getExpansion());
+            imageRepository.deleteById(image.getId());
+        }
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("Images deleted");
     }
 
     private void resizeAndSaveImage(MultipartFile file, String fileName, String fileExpansion,
